@@ -59,3 +59,7 @@ Thumbs.db
 
 # ─── Streamlit ────────────────────────────────────────────────────────────────
 .streamlit/secrets.toml
+
+# Models for Streamlit Deployment
+!models/model_nb_ngram.pkl
+!models/vectorizer_ngram.pkl

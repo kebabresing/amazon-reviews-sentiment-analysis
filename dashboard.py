@@ -93,7 +93,7 @@ section[data-testid="stSidebar"] { background-color: #0D1321; border-right: 1px 
 # ─── Load & Parse Data ────────────────────────────────────────────────────────
 def load_data():
     try:
-        with open('all_metrics.json', 'r', encoding='utf-8') as f:
+        with open('results/all_metrics.json', 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
         st.error(f"Gagal memuat file metrik: {e}")
@@ -677,8 +677,8 @@ with tab_train:
     train_img_col1, train_img_col2 = st.columns(2)
     with train_img_col1:
         st.markdown("<div style='color:#CBD5E1;font-weight:600;margin-bottom:8px;'>DistilBERT — Training History</div>", unsafe_allow_html=True)
-        if os.path.exists('distilbert_history.png'):
-            st.image('distilbert_history.png', use_container_width=True)
+        if os.path.exists('visualizations/distilbert_history.png'):
+            st.image('visualizations/distilbert_history.png', use_container_width=True)
         else:
             st.markdown("""
 <div style='border:1px dashed #1E2D45;border-radius:10px;padding:40px;text-align:center;color:#334155;'>
@@ -705,10 +705,10 @@ with tab_train:
 
     with train_img_col2:
         st.markdown("<div style='color:#CBD5E1;font-weight:600;margin-bottom:8px;'>GloVe 300d + MLP — Training History</div>", unsafe_allow_html=True)
-        if os.path.exists('glove300d_results.png'):
-            st.image('glove300d_results.png', use_container_width=True)
-        elif os.path.exists('distilbert_history.png'):
-            st.image('distilbert_history.png', caption='(fallback: DistilBERT history)', use_container_width=True)
+        if os.path.exists('visualizations/glove300d_results.png'):
+            st.image('visualizations/glove300d_results.png', use_container_width=True)
+        elif os.path.exists('visualizations/distilbert_history.png'):
+            st.image('visualizations/distilbert_history.png', caption='(fallback: DistilBERT history)', use_container_width=True)
         else:
             st.markdown("""
 <div style='border:1px dashed #1E2D45;border-radius:10px;padding:40px;text-align:center;color:#334155;'>
@@ -735,26 +735,26 @@ Augmented Data: <code>{'Ya' if glove_data.get('used_augmented_data') else 'Tidak
     st.markdown('<div class="section-header" style="font-size:0.8rem;">Confusion Matrix Model Deep Learning</div>', unsafe_allow_html=True)
     cm_img_col1, cm_img_col2 = st.columns(2)
     with cm_img_col1:
-        if os.path.exists('distilbert_cm.png'):
-            st.image('distilbert_cm.png', caption='Confusion Matrix — DistilBERT', use_container_width=True)
+        if os.path.exists('visualizations/distilbert_cm.png'):
+            st.image('visualizations/distilbert_cm.png', caption='Confusion Matrix — DistilBERT', use_container_width=True)
     with cm_img_col2:
-        if os.path.exists('comparison_confusion_matrices.png'):
-            st.image('comparison_confusion_matrices.png', caption='Confusion Matrix — Semua Model', use_container_width=True)
+        if os.path.exists('visualizations/comparison_confusion_matrices.png'):
+            st.image('visualizations/comparison_confusion_matrices.png', caption='Confusion Matrix — Semua Model', use_container_width=True)
 
     st.markdown('<hr class="divider">', unsafe_allow_html=True)
     st.markdown('<div class="section-header" style="font-size:0.8rem;">Grafik Hasil Perbandingan</div>', unsafe_allow_html=True)
     img_col1, img_col2, img_col3 = st.columns(3)
     with img_col1:
-        if os.path.exists('comparison_all_metrics.png'):
-            st.image('comparison_all_metrics.png', caption='Perbandingan Semua Metrik', use_container_width=True)
+        if os.path.exists('visualizations/comparison_all_metrics.png'):
+            st.image('visualizations/comparison_all_metrics.png', caption='Perbandingan Semua Metrik', use_container_width=True)
     with img_col2:
-        if os.path.exists('comparison_radar.png'):
-            st.image('comparison_radar.png', caption='Radar Chart Perbandingan', use_container_width=True)
+        if os.path.exists('visualizations/comparison_radar.png'):
+            st.image('visualizations/comparison_radar.png', caption='Radar Chart Perbandingan', use_container_width=True)
     with img_col3:
-        if os.path.exists('comparison_f1_ranking.png'):
-            st.image('comparison_f1_ranking.png', caption='F1 Ranking', use_container_width=True)
-        elif os.path.exists('final_comparison.png'):
-            st.image('final_comparison.png', caption='Final Comparison', use_container_width=True)
+        if os.path.exists('visualizations/comparison_f1_ranking.png'):
+            st.image('visualizations/comparison_f1_ranking.png', caption='F1 Ranking', use_container_width=True)
+        elif os.path.exists('visualizations/final_comparison.png'):
+            st.image('visualizations/final_comparison.png', caption='Final Comparison', use_container_width=True)
 
 # ── TAB 6: Kesimpulan ─────────────────────────────────────────────────────────
 with tab6:
@@ -815,8 +815,8 @@ antara Precision dan Recall pada kedua kelas. Jika sumber daya komputasi terbata
 def load_predictor():
     try:
         # Diupgrade menggunakan model N-Gram yang memiliki akurasi/F1 lebih baik
-        vec   = joblib.load('vectorizer_ngram.pkl')
-        model = joblib.load('model_nb_ngram.pkl')
+        vec   = joblib.load('models/vectorizer_ngram.pkl')
+        model = joblib.load('models/model_nb_ngram.pkl')
         return vec, model
     except Exception as e:
         return None, None

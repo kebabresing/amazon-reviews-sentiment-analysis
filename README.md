@@ -134,33 +134,31 @@ Dashboard akan terbuka di `http://localhost:8501`
 ```
 nlp-sentiment-amazon/
 │
-├── 📓 00_All_In_One_Pipeline.ipynb   # Pipeline NLP lengkap (training semua model)
 ├── 🎯 dashboard.py                   # Streamlit interactive dashboard
-│
-├── 📊 Metrics & Results
-│   ├── all_metrics.json              # Hasil evaluasi semua model
-│   ├── classical_metrics.json        # Metrik Classical ML
-│   ├── embedding_metrics.json        # Metrik GloVe/Word2Vec
-│   ├── transformer_metrics.json      # Metrik DistilBERT
-│   └── kfold_cv_results.json         # Hasil K-Fold Cross Validation
-│
-├── 🖼️ Visualizations
-│   ├── comparison_all_metrics.png    # Bar chart semua metrik
-│   ├── comparison_confusion_matrices.png
-│   ├── comparison_radar.png          # Radar chart perbandingan
-│   ├── comparison_f1_ranking.png     # Ranking F1-Macro
-│   ├── distilbert_history.png        # Training curve DistilBERT
-│   ├── distilbert_cm.png             # Confusion matrix DistilBERT
-│   ├── glove300d_results.png         # Training history GloVe 300d
-│   └── kfold_cv_results.png          # Plot K-Fold CV
-│
-├── 🔧 Utilities
-│   ├── remove_emoji.py               # Script preprocessing emoji
-│   └── augmentation_report.json      # Laporan augmentasi data
-│
 ├── 📋 requirements.txt
 ├── .gitignore
-└── README.md
+├── README.md
+│
+├── 📓 notebooks/
+│   └── AIO_Pipeline.ipynb            # Pipeline NLP lengkap
+│
+├── 📊 results/
+│   ├── all_metrics.json              # Hasil evaluasi semua model
+│   └── *_metrics.json
+│
+├── 🖼️ visualizations/
+│   └── *.png                         # Grafik comparison & confusion matrix
+│
+├── 🤖 models/
+│   ├── model_nb_ngram.pkl            # Model yang di-deploy (Inference)
+│   ├── vectorizer_ngram.pkl
+│   └── (model & tokenizer lainnya)
+│
+├── 📁 data/
+│   └── (Dataset CSV & GloVe - diabaikan Git)
+│
+└── 🔧 scripts/
+    └── *.py                          # Script utility & preprocessing
 ```
 
 ---
