@@ -34,7 +34,7 @@ Proyek ini membandingkan performa berbagai pendekatan NLP untuk tugas **Binary S
 | 🥈 2 | Word2Vec + MLP | 94.77% | 0.8986 |
 | 🥉 3 | NB + N-Gram | 90.87% | 0.8500 |
 | 4 | NB + BOW | 90.17% | 0.8385 |
-| 5 | GloVe 300d + MLP | — | 0.8280 |
+| 5 | GloVe 300d + MLP | 89.64% | 0.8280 |
 | 6 | NB + TF-IDF | 89.11% | 0.8247 |
 | 7 | GloVe 50d + MLP | 88.95% | 0.7572 |
 | 8 | DT + N-Gram | 83.86% | 0.7522 |
@@ -98,7 +98,7 @@ Dashboard Streamlit interaktif dengan 8 tab:
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/<username>/nlp-sentiment-amazon.git
+https://github.com/kebabresing/amazon-reviews-sentiment-analysis.git
 cd nlp-sentiment-amazon
 ```
 
