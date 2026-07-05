@@ -43,6 +43,9 @@ Proyek ini membandingkan performa berbagai pendekatan NLP untuk tugas **Binary S
 
 > **DistilBERT** (fine-tuned 3 epochs, ~85 menit training) mencapai performa terbaik dengan F1-Macro **0.9513**.
 
+##Online Dashboard : 
+https://amazon-reviews-sentiment-analysis-nlp.streamlit.app/
+
 ---
 
 ## Pipeline & Metodologi
