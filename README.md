@@ -207,8 +207,7 @@ nltk         >= 3.8.0     (untuk preprocessing)
 
 ## Author & Team
 
-**NAMA: Akhmad Zamri Ardani - 202310370311406**
-**NAMA: Achmad Rizqy Nur - 202310370311430**  
+**Akhmad Zamri Ardani - 202310370311406 & Achmad Rizqy Nur - 202310370311430**  
 Proyek NLP untuk keperluan akademik — Analisis Sentimen pada Dataset Amazon Fine Food Reviews
 
 ---
