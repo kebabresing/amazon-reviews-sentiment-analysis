@@ -1,4 +1,4 @@
-# 🧠 NLP Sentiment Analysis — Amazon Fine Food Reviews
+# NLP Sentiment Analysis — Amazon Fine Food Reviews
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white" />
@@ -16,7 +16,7 @@
 
 ---
 
-## 📋 Deskripsi Proyek
+## Deskripsi Proyek
 
 Proyek ini membandingkan performa berbagai pendekatan NLP untuk tugas **Binary Sentiment Classification** pada dataset [Amazon Fine Food Reviews](https://www.kaggle.com/datasets/snap/amazon-fine-food-reviews).
 
@@ -26,7 +26,7 @@ Proyek ini membandingkan performa berbagai pendekatan NLP untuk tugas **Binary S
 
 ---
 
-## 🏆 Hasil Perbandingan Model
+## Hasil Perbandingan Model
 
 | Rank | Model | Accuracy | F1-Macro |
 |:----:|-------|:--------:|:--------:|
@@ -45,7 +45,7 @@ Proyek ini membandingkan performa berbagai pendekatan NLP untuk tugas **Binary S
 
 ---
 
-## 🛠️ Pipeline & Metodologi
+## Pipeline & Metodologi
 
 ### Preprocessing
 ```
@@ -76,7 +76,7 @@ Proyek ini membandingkan performa berbagai pendekatan NLP untuk tugas **Binary S
 
 ---
 
-## 📊 Interactive Dashboard
+## Interactive Dashboard
 
 Dashboard Streamlit interaktif dengan 8 tab:
 
@@ -93,7 +93,7 @@ Dashboard Streamlit interaktif dengan 8 tab:
 
 ---
 
-## 🚀 Cara Menjalankan
+## Cara Menjalankan
 
 ### 1. Clone Repository
 
@@ -114,7 +114,7 @@ File berikut **tidak di-commit** ke repo karena ukuran besar. Unduh atau generat
 
 | File | Keterangan | Cara Mendapatkan |
 |------|-----------|-----------------|
-| `all_metrics.json` | ✅ Sudah ada di repo | — |
+| `all_metrics.json` | Sudah ada di repo | — |
 | `Reviews.csv` | Dataset Amazon Fine Food Reviews | [Kaggle](https://www.kaggle.com/datasets/snap/amazon-fine-food-reviews) |
 | `glove.6B.300d.txt` | GloVe embeddings 300 dimensi | [nlp.stanford.edu](https://nlp.stanford.edu/projects/glove/) |
 | `*.pkl`, `*.keras` | Model terlatih | Jalankan notebook pipeline |
@@ -129,41 +129,41 @@ Dashboard akan terbuka di `http://localhost:8501`
 
 ---
 
-## 📁 Struktur Proyek
+## Struktur Proyek
 
 ```
 nlp-sentiment-amazon/
 │
-├── 🎯 dashboard.py                   # Streamlit interactive dashboard
-├── 📋 requirements.txt
+├── dashboard.py                   # Streamlit interactive dashboard
+├── requirements.txt
 ├── .gitignore
 ├── README.md
 │
-├── 📓 notebooks/
+├── notebooks/
 │   └── AIO_Pipeline.ipynb            # Pipeline NLP lengkap
 │
-├── 📊 results/
+├── results/
 │   ├── all_metrics.json              # Hasil evaluasi semua model
 │   └── *_metrics.json
 │
-├── 🖼️ visualizations/
+├── visualizations/
 │   └── *.png                         # Grafik comparison & confusion matrix
 │
-├── 🤖 models/
+├── models/
 │   ├── model_nb_ngram.pkl            # Model yang di-deploy (Inference)
 │   ├── vectorizer_ngram.pkl
 │   └── (model & tokenizer lainnya)
 │
-├── 📁 data/
+├── data/
 │   └── (Dataset CSV & GloVe - diabaikan Git)
 │
-└── 🔧 scripts/
+└── scripts/
     └── *.py                          # Script utility & preprocessing
 ```
 
 ---
 
-## 🔧 Requirements
+## Requirements
 
 ```
 Python       3.10+
@@ -181,7 +181,7 @@ nltk         >= 3.8.0     (untuk preprocessing)
 
 ---
 
-## 🔬 Temuan Utama
+## Temuan Utama
 
 1. **Deep Learning > Classical ML** — Model berbasis embedding (Word2Vec, GloVe) dan Transformer secara konsisten mengungguli Classical ML dalam menangani class imbalance.
 
@@ -195,7 +195,7 @@ nltk         >= 3.8.0     (untuk preprocessing)
 
 ---
 
-## 📚 Dataset
+## Dataset
 
 **Amazon Fine Food Reviews**
 - **Sumber:** [Kaggle / SNAP Stanford](https://www.kaggle.com/datasets/snap/amazon-fine-food-reviews)
@@ -205,14 +205,15 @@ nltk         >= 3.8.0     (untuk preprocessing)
 
 ---
 
-## 👤 Author
+## Author & Team
 
-**Sueb**  
+**NAMA: Akhmad Zamri Ardani - 202310370311406**
+**NAMA: Achmad Rizqy Nur - 202310370311430**  
 Proyek NLP untuk keperluan akademik — Analisis Sentimen pada Dataset Amazon Fine Food Reviews
 
 ---
 
-## 📄 License
+## License
 
 Proyek ini dibuat untuk keperluan akademik dan edukasi.
 
