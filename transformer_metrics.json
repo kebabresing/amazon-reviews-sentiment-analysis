@@ -1,0 +1,21 @@
+{
+  "DistilBERT": {
+    "accuracy": 0.9739069499024431,
+    "precision": 0.9453546901176282,
+    "recall": 0.9576106455522246,
+    "f1": 0.9513488134619775,
+    "confusion_matrix": [
+      [
+        10661,
+        755
+      ],
+      [
+        1144,
+        60218
+      ]
+    ],
+    "train_time_s": 5135.981457233429,
+    "epochs": 3,
+    "model_name": "distilbert-base-uncased"
+  }
+}

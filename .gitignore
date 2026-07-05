@@ -1,0 +1,61 @@
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ─── Jupyter ──────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ─── Large Datasets (too big for GitHub) ──────────────────────────────────────
+Reviews.csv
+preprocessed_data.csv
+train.csv
+test.csv
+val.csv
+train_augmented.csv
+
+# ─── GloVe Embeddings (download separately) ───────────────────────────────────
+glove.6B.50d.txt
+glove.6B.300d.txt
+glove.6B.*.txt
+
+# ─── Trained Model Files ──────────────────────────────────────────────────────
+*.pkl
+*.keras
+*.model
+*.h5
+best_distilbert/
+
+# ─── Temporary & Debug Files ──────────────────────────────────────────────────
+out.txt
+out2.txt
+out3.txt
+temp_cells.txt
+dump.py
+add_fallback.py
+fix_nb.py
+fix_kfold.py
+debug_cm.py
+rebuild_metrics.py
+
+# ─── OS & IDE ─────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ─── Streamlit ────────────────────────────────────────────────────────────────
+.streamlit/secrets.toml

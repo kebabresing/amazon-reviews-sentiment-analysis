@@ -1,0 +1,169 @@
+{
+  "DT + BOW": {
+    "accuracy": 0.8296875429388002,
+    "precision": 0.7143656379740355,
+    "recall": 0.8118372186932434,
+    "f1": 0.741922635773129,
+    "confusion_matrix": [
+      [
+        8971,
+        2445
+      ],
+      [
+        9950,
+        51412
+      ]
+    ]
+  },
+  "DT + N-Gram": {
+    "accuracy": 0.8385775921294897,
+    "precision": 0.7235780111618861,
+    "recall": 0.8193194995101502,
+    "f1": 0.7522276586610412,
+    "confusion_matrix": [
+      [
+        9033,
+        2383
+      ],
+      [
+        9365,
+        51997
+      ]
+    ]
+  },
+  "DT + TF-IDF": {
+    "accuracy": 0.8194921542224298,
+    "precision": 0.7058572598423876,
+    "recall": 0.8082866184173798,
+    "f1": 0.7321506875452091,
+    "confusion_matrix": [
+      [
+        9041,
+        2375
+      ],
+      [
+        10762,
+        50600
+      ]
+    ]
+  },
+  "NB + BOW": {
+    "accuracy": 0.9017285443403227,
+    "precision": 0.8053206066500915,
+    "recall": 0.8929539468089779,
+    "f1": 0.8385348207136956,
+    "confusion_matrix": [
+      [
+        10048,
+        1368
+      ],
+      [
+        5784,
+        55578
+      ]
+    ]
+  },
+  "NB + N-Gram": {
+    "accuracy": 0.9086674544505208,
+    "precision": 0.8155092920518521,
+    "recall": 0.9061595735573791,
+    "f1": 0.8499570060951167,
+    "confusion_matrix": [
+      [
+        10303,
+        1113
+      ],
+      [
+        5534,
+        55828
+      ]
+    ]
+  },
+  "NB + TF-IDF": {
+    "accuracy": 0.891148423974278,
+    "precision": 0.7903814246891898,
+    "recall": 0.8857171604827367,
+    "f1": 0.8246693332468151,
+    "confusion_matrix": [
+      [
+        10021,
+        1395
+      ],
+      [
+        6527,
+        54835
+      ]
+    ]
+  },
+  "GloVe + MLP": {
+    "accuracy": 0.8894583527989227,
+    "precision": 0.8148820940986103,
+    "recall": 0.7238273074600633,
+    "f1": 0.757167324805504,
+    "confusion_matrix": [
+      [
+        5508,
+        5908
+      ],
+      [
+        2137,
+        59225
+      ]
+    ]
+  },
+  "Word2Vec + MLP": {
+    "accuracy": 0.9476627552282283,
+    "precision": 0.9088580520810008,
+    "recall": 0.8892142453550377,
+    "f1": 0.8986490734193693,
+    "confusion_matrix": [
+      [
+        9179,
+        2237
+      ],
+      [
+        1572,
+        59790
+      ]
+    ]
+  },
+  "DistilBERT": {
+    "accuracy": 0.9739069499024431,
+    "precision": 0.9453546901176282,
+    "recall": 0.9576106455522246,
+    "f1": 0.9513488134619775,
+    "confusion_matrix": [
+      [
+        10661,
+        755
+      ],
+      [
+        1144,
+        60218
+      ]
+    ],
+    "train_time_s": 5135.981457233429,
+    "epochs": 3,
+    "model_name": "distilbert-base-uncased"
+  },
+  "kfold_cv": {
+    "n_folds": 5,
+    "strategy": "StratifiedKFold",
+    "results": {}
+  },
+  "embedding_models": {
+    "GloVe_300d_MLP": {
+      "model": "GloVe 300d + MLP",
+      "embedding_dim": 300,
+      "max_len": 200,
+      "max_vocab": 50000,
+      "f1_macro": 0.828,
+      "f1_negative": 0.7164,
+      "f1_positive": 0.9396,
+      "precision_macro": 0.8043,
+      "recall_macro": 0.8605,
+      "used_class_weights": true,
+      "used_augmented_data": false
+    }
+  }
+}

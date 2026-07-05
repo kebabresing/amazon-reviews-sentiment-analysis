@@ -1,0 +1,12 @@
+{
+  "original_negative": 39957,
+  "original_positive": 214764,
+  "original_ratio": 5.3748779938433815,
+  "augmented_negative": 41953,
+  "augmented_positive": 214764,
+  "augmented_ratio": 5.1191571520511046,
+  "added_bt_zh": 1000,
+  "added_bt_de": 996,
+  "demo_mode": true,
+  "sample_size_if_demo": 1000
+}
