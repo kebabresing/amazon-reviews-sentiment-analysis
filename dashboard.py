@@ -82,6 +82,56 @@ h3 { color: #94A3B8; font-weight: 500; }
 }
 .conclusion-box h3 { color: #F1F5F9; margin-bottom: 8px; }
 
+/* ── Tab Bar Premium ── */
+
+/* Tab list container */
+div[data-testid="stTabs"] > div:first-child {
+    border-bottom: 1px solid #1E2D45 !important;
+    gap: 4px !important;
+}
+
+/* Setiap tab button */
+button[data-baseweb="tab"] {
+    font-size: 1.05rem !important;
+    font-weight: 500 !important;
+    color: #64748B !important;
+    padding: 0.85rem 1.2rem !important;
+    border-radius: 8px 8px 0 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease !important;
+    letter-spacing: 0.3px !important;
+    position: relative !important;
+}
+
+/* Konten dalam tab button */
+button[data-baseweb="tab"] > div {
+    font-size: 1.05rem !important;
+    font-weight: 500 !important;
+}
+
+/* Hover state — tab tidak aktif */
+button[data-baseweb="tab"]:hover {
+    color: #CBD5E1 !important;
+    background: rgba(56, 189, 248, 0.06) !important;
+    border-bottom: 2px solid rgba(56, 189, 248, 0.35) !important;
+}
+
+/* Active / selected tab */
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: #38BDF8 !important;
+    font-weight: 700 !important;
+    background: rgba(56, 189, 248, 0.08) !important;
+    border-bottom: 2px solid #38BDF8 !important;
+    text-shadow: 0 0 12px rgba(56, 189, 248, 0.4) !important;
+}
+
+/* Hapus garis bawah default Streamlit */
+div[data-testid="stTabs"] [role="tablist"] {
+    gap: 2px !important;
+}
+
 /* Sidebar */
 section[data-testid="stSidebar"] { background-color: #0D1321; border-right: 1px solid #1E2D45; }
 
@@ -198,10 +248,10 @@ if not df.empty:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ─── Tabs ─────────────────────────────────────────────────────────────────────
-tab0, tab1, tab2, tab3, tab4, tab_train, tab5, tab6 = st.tabs([
+tab0, tab1, tab2, tab3, tab4, tab_train, tab_err, tab5, tab6 = st.tabs([
     "Eksplorasi Data", "Perbandingan", "Radar Chart",
     "Confusion Matrix", "Analisis Per Kelas",
-    "Riwayat Training", "Prediksi Sentimen", "Kesimpulan"
+    "Riwayat Training", "Error Analysis", "Prediksi Sentimen", "Kesimpulan"
 ])
 
 # ── TAB 0: Eksplorasi Data (EDA) ──────────────────────────────────────────────
@@ -809,6 +859,232 @@ antara Precision dan Recall pada kedua kelas. Jika sumber daya komputasi terbata
         for c in ['Accuracy','Precision','Recall','F1-Macro']:
             final[c] = final[c].apply(lambda x: f"{x*100:.2f}%")
         st.dataframe(final, use_container_width=True)
+
+# ── TAB ERROR ANALYSIS ───────────────────────────────────────────────────────
+with tab_err:
+    st.markdown('<div class="section-header">Error Analysis — Analisis Kesalahan Prediksi Model</div>', unsafe_allow_html=True)
+    st.markdown("<p style='color:#64748B;font-size:0.87rem;'>Analisis mendalam terhadap pola kesalahan setiap model: False Positive (FP), False Negative (FN), dan distribusi error per kelas.</p>", unsafe_allow_html=True)
+
+    # Filter model yang memiliki confusion matrix valid
+    df_err = df[df['CM'].apply(lambda x: len(x) == 2 and len(x[0]) == 2)].copy()
+
+    if df_err.empty:
+        st.info("Tidak ada data confusion matrix yang tersedia untuk analisis error.")
+    else:
+        # ── Hitung metrik error dari confusion matrix
+        err_rows = []
+        for _, row in df_err.iterrows():
+            try:
+                cm_raw = row['CM']
+                tn = int(cm_raw[0][0]); fp = int(cm_raw[0][1])
+                fn = int(cm_raw[1][0]); tp = int(cm_raw[1][1])
+                total = tn + fp + fn + tp
+                total_neg = tn + fp
+                total_pos = fn + tp
+                err_rows.append({
+                    'Model': row['Model'],
+                    'Kategori': row['Kategori'],
+                    'FP': fp, 'FN': fn,
+                    'TP': tp, 'TN': tn,
+                    'Total': total,
+                    'Total_Neg': total_neg,
+                    'Total_Pos': total_pos,
+                    'Error_Total': fp + fn,
+                    'Error_Rate': (fp + fn) / total * 100 if total > 0 else 0,
+                    'FPR': fp / total_neg * 100 if total_neg > 0 else 0,   # False Positive Rate
+                    'FNR': fn / total_pos * 100 if total_pos > 0 else 0,   # False Negative Rate
+                    'F1': row['F1-Macro'],
+                })
+            except Exception:
+                continue
+
+        df_er = pd.DataFrame(err_rows).sort_values('Error_Rate').reset_index(drop=True)
+
+        # ── KPI Cards ──
+        best_err = df_er.iloc[0]
+        worst_err = df_er.iloc[-1]
+        total_err_all = df_er['Error_Total'].sum()
+        avg_err_rate = df_er['Error_Rate'].mean()
+
+        kpi_e1, kpi_e2, kpi_e3, kpi_e4 = st.columns(4)
+        err_kpis = [
+            (kpi_e1, "Model Paling Akurat", best_err['Model'], "#34D399"),
+            (kpi_e2, "Error Rate Terendah", f"{best_err['Error_Rate']:.2f}%", "#38BDF8"),
+            (kpi_e3, "Error Rate Tertinggi", f"{worst_err['Error_Rate']:.2f}%", "#FB7185"),
+            (kpi_e4, "Avg Error Rate", f"{avg_err_rate:.2f}%", "#F59E0B"),
+        ]
+        for col, title, val, color in err_kpis:
+            col.markdown(
+                f'<div class="metric-card"><div class="metric-title">{title}</div>'
+                f'<div class="metric-value" style="color:{color};font-size:1.2rem;">{val}</div></div>',
+                unsafe_allow_html=True
+            )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ── Section 1: Error Rate & Total Error Ranking ──
+        st.markdown('<div class="section-header" style="font-size:0.8rem;">Ranking Error Rate per Model</div>', unsafe_allow_html=True)
+        col_er1, col_er2 = st.columns([6, 4])
+        with col_er1:
+            err_colors = ['#34D399' if r < avg_err_rate else '#FB7185' for r in df_er['Error_Rate']]
+            fig_er = go.Figure(go.Bar(
+                x=df_er['Error_Rate'],
+                y=df_er['Model'],
+                orientation='h',
+                marker_color=err_colors,
+                text=[f"{r:.2f}%" for r in df_er['Error_Rate']],
+                textposition='outside',
+                textfont=dict(color='#94A3B8', size=11)
+            ))
+            fig_er.add_vline(
+                x=avg_err_rate,
+                line=dict(color='#F59E0B', width=1.5, dash='dash'),
+                annotation_text=f"Avg {avg_err_rate:.2f}%",
+                annotation_font=dict(color='#F59E0B', size=11),
+                annotation_position='top right'
+            )
+            _er_layout = {**LAYOUT, 'height': 320,
+                           'xaxis': dict(title='Error Rate (%)', gridcolor='#1E2D45'),
+                           'margin': dict(t=30, b=20, r=100)}
+            fig_er.update_layout(**_er_layout)
+            st.plotly_chart(fig_er, use_container_width=True)
+
+        with col_er2:
+            st.markdown('<div class="section-header" style="font-size:0.75rem;">Total Salah Klasifikasi</div>', unsafe_allow_html=True)
+            df_er_disp = df_er[['Model', 'FP', 'FN', 'Error_Total', 'Error_Rate']].copy()
+            df_er_disp['Error_Rate'] = df_er_disp['Error_Rate'].apply(lambda x: f"{x:.2f}%")
+            df_er_disp.columns = ['Model', 'False Pos', 'False Neg', 'Total Error', 'Error Rate']
+            st.dataframe(df_er_disp, use_container_width=True, hide_index=True, height=320)
+
+        st.markdown('<hr class="divider">', unsafe_allow_html=True)
+
+        # ── Section 2: FP vs FN Comparison ──
+        st.markdown('<div class="section-header" style="font-size:0.8rem;">False Positive vs False Negative per Model</div>', unsafe_allow_html=True)
+        st.markdown("<p style='color:#64748B;font-size:0.82rem;'><strong>False Positive (FP)</strong>: Ulasan Negatif yang salah diprediksi Positif. <strong>False Negative (FN)</strong>: Ulasan Positif yang salah diprediksi Negatif.</p>", unsafe_allow_html=True)
+
+        fig_fpfn = go.Figure()
+        df_er_sorted_f1 = df_er.sort_values('F1', ascending=False)
+        fig_fpfn.add_trace(go.Bar(
+            name='False Positive (FP)',
+            x=df_er_sorted_f1['Model'],
+            y=df_er_sorted_f1['FP'],
+            marker_color='#FB7185',
+            text=df_er_sorted_f1['FP'].apply(lambda x: f"{x:,}"),
+            textposition='outside',
+            textfont=dict(color='#94A3B8', size=10)
+        ))
+        fig_fpfn.add_trace(go.Bar(
+            name='False Negative (FN)',
+            x=df_er_sorted_f1['Model'],
+            y=df_er_sorted_f1['FN'],
+            marker_color='#F59E0B',
+            text=df_er_sorted_f1['FN'].apply(lambda x: f"{x:,}"),
+            textposition='outside',
+            textfont=dict(color='#94A3B8', size=10)
+        ))
+        fig_fpfn.update_layout(
+            **LAYOUT, barmode='group', height=350,
+            xaxis=dict(title='', tickangle=-20),
+            yaxis=dict(title='Jumlah Sampel', gridcolor='#1E2D45'),
+            legend=dict(orientation='h', y=1.08)
+        )
+        st.plotly_chart(fig_fpfn, use_container_width=True)
+
+        st.markdown('<hr class="divider">', unsafe_allow_html=True)
+
+        # ── Section 3: FPR vs FNR (Rate) ──
+        st.markdown('<div class="section-header" style="font-size:0.8rem;">False Positive Rate vs False Negative Rate (%)</div>', unsafe_allow_html=True)
+        col_fpr, col_fnr = st.columns(2)
+        with col_fpr:
+            st.markdown("<div style='color:#CBD5E1;font-size:0.82rem;font-weight:600;margin-bottom:6px;'>False Positive Rate — FP / Total Aktual Negatif</div>", unsafe_allow_html=True)
+            df_fpr = df_er.sort_values('FPR')
+            fpr_colors = ['#34D399' if r < df_er['FPR'].mean() else '#FB7185' for r in df_fpr['FPR']]
+            fig_fpr = go.Figure(go.Bar(
+                x=df_fpr['FPR'],
+                y=df_fpr['Model'],
+                orientation='h',
+                marker_color=fpr_colors,
+                text=[f"{r:.1f}%" for r in df_fpr['FPR']],
+                textposition='outside',
+                textfont=dict(color='#94A3B8', size=11)
+            ))
+            fig_fpr.update_layout(**{**LAYOUT, 'height': 280,
+                                      'xaxis': dict(title='FPR (%)', gridcolor='#1E2D45'),
+                                      'margin': dict(t=10, b=10, r=60)})
+            st.plotly_chart(fig_fpr, use_container_width=True)
+
+        with col_fnr:
+            st.markdown("<div style='color:#CBD5E1;font-size:0.82rem;font-weight:600;margin-bottom:6px;'>False Negative Rate — FN / Total Aktual Positif</div>", unsafe_allow_html=True)
+            df_fnr = df_er.sort_values('FNR')
+            fnr_colors = ['#34D399' if r < df_er['FNR'].mean() else '#F59E0B' for r in df_fnr['FNR']]
+            fig_fnr = go.Figure(go.Bar(
+                x=df_fnr['FNR'],
+                y=df_fnr['Model'],
+                orientation='h',
+                marker_color=fnr_colors,
+                text=[f"{r:.1f}%" for r in df_fnr['FNR']],
+                textposition='outside',
+                textfont=dict(color='#94A3B8', size=11)
+            ))
+            fig_fnr.update_layout(**{**LAYOUT, 'height': 280,
+                                      'xaxis': dict(title='FNR (%)', gridcolor='#1E2D45'),
+                                      'margin': dict(t=10, b=10, r=60)})
+            st.plotly_chart(fig_fnr, use_container_width=True)
+
+        st.markdown('<hr class="divider">', unsafe_allow_html=True)
+
+        # ── Section 4: Error Composition Stacked Bar ──
+        st.markdown('<div class="section-header" style="font-size:0.8rem;">Komposisi Prediksi per Model (Stacked)</div>', unsafe_allow_html=True)
+        df_stk = df_er.sort_values('F1', ascending=False)
+        fig_stk = go.Figure()
+        fig_stk.add_trace(go.Bar(name='True Positive (TP)', x=df_stk['Model'], y=df_stk['TP'],
+                                  marker_color='#38BDF8'))
+        fig_stk.add_trace(go.Bar(name='True Negative (TN)', x=df_stk['Model'], y=df_stk['TN'],
+                                  marker_color='#34D399'))
+        fig_stk.add_trace(go.Bar(name='False Positive (FP)', x=df_stk['Model'], y=df_stk['FP'],
+                                  marker_color='#FB7185'))
+        fig_stk.add_trace(go.Bar(name='False Negative (FN)', x=df_stk['Model'], y=df_stk['FN'],
+                                  marker_color='#F59E0B'))
+        fig_stk.update_layout(
+            **LAYOUT, barmode='stack', height=380,
+            xaxis=dict(tickangle=-20),
+            yaxis=dict(title='Jumlah Sampel', gridcolor='#1E2D45'),
+            legend=dict(orientation='h', y=1.08)
+        )
+        st.plotly_chart(fig_stk, use_container_width=True)
+
+        st.markdown('<hr class="divider">', unsafe_allow_html=True)
+
+        # ── Section 5: Automated Error Insights ──
+        st.markdown('<div class="section-header" style="font-size:0.8rem;">Insight Otomatis</div>', unsafe_allow_html=True)
+
+        best_fpr_model = df_er.sort_values('FPR').iloc[0]
+        best_fnr_model = df_er.sort_values('FNR').iloc[0]
+        worst_err_model = df_er.sort_values('Error_Rate', ascending=False).iloc[0]
+        fp_heavy = df_er[df_er['FP'] > df_er['FN']]
+        fn_heavy = df_er[df_er['FN'] > df_er['FP']]
+
+        insights = []
+        insights.append(f"🏆 Model <strong>{best_err['Model']}</strong> memiliki error rate terendah sebesar <code>{best_err['Error_Rate']:.2f}%</code> dari total <code>{best_err['Total']:,}</code> sampel uji.")
+        insights.append(f"⚠️ Model <strong>{worst_err_model['Model']}</strong> memiliki error rate tertinggi (<code>{worst_err_model['Error_Rate']:.2f}%</code>) dengan total <code>{int(worst_err_model['Error_Total']):,}</code> kesalahan prediksi.")
+        insights.append(f"📌 False Positive Rate terendah dimiliki oleh <strong>{best_fpr_model['Model']}</strong> (<code>{best_fpr_model['FPR']:.1f}%</code>) — model ini paling jarang salah mengklasifikasikan ulasan Negatif sebagai Positif.")
+        insights.append(f"📌 False Negative Rate terendah dimiliki oleh <strong>{best_fnr_model['Model']}</strong> (<code>{best_fnr_model['FNR']:.1f}%</code>) — model ini paling jarang melewatkan ulasan Positif.")
+        if not fp_heavy.empty:
+            fph_list = ', '.join([f"<strong>{m}</strong>" for m in fp_heavy['Model'].tolist()])
+            insights.append(f"🔴 Model yang cenderung <em>over-predict Positif</em> (FP &gt; FN): {fph_list}. Hal ini umum terjadi akibat class imbalance yang condong ke kelas Positif.")
+        if not fn_heavy.empty:
+            fnh_list = ', '.join([f"<strong>{m}</strong>" for m in fn_heavy['Model'].tolist()])
+            insights.append(f"🟡 Model yang cenderung <em>under-detect Positif</em> (FN &gt; FP): {fnh_list}.")
+
+        insight_html = "".join([f"<li style='margin-bottom:10px;color:#CBD5E1;font-size:0.88rem;line-height:1.6;'>{ins}</li>" for ins in insights])
+        st.markdown(f"""
+<div style='background:linear-gradient(135deg,#0F1E35,#111827);border:1px solid #1E3A5F;
+     border-left:4px solid #38BDF8;border-radius:12px;padding:20px 28px;'>
+  <ul style='padding-left:20px;margin:0;'>
+    {insight_html}
+  </ul>
+</div>
+""", unsafe_allow_html=True)
 
 # ── TAB 5: Prediksi Sentimen ─────────────────────────────────────────────────
 @st.cache_resource
