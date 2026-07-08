@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_option_menu import option_menu
 import pandas as pd
 import json
 import plotly.express as px
@@ -11,7 +12,6 @@ import math
 
 st.set_page_config(
     page_title="NLP Sentiment Dashboard",
-    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -194,6 +194,40 @@ LAYOUT = dict(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
 # ─── Sidebar ─────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("## NLP Dashboard")
+    selected = option_menu(
+        menu_title=None,
+        options=[
+            "Overview",
+            "Data & Preprocessing",
+            "Feature Extraction",
+            "Training & Evaluation",
+            "Model Comparison",
+            "Error Analysis",
+            "Final Insights",
+            "Interactive Prediction",
+        ],
+        icons=["house-fill", "database-fill", "gear-fill", "cpu-fill",
+               "bar-chart-fill", "search", "lightbulb-fill", "bullseye"],
+        default_index=0,
+        styles={
+            "container": {"padding": "4px 0!important", "background-color": "transparent"},
+            "icon": {"color": "#64748B", "font-size": "15px"},
+            "nav-link": {
+                "font-size": "14px", "font-weight": "500",
+                "text-align": "left", "margin": "1px 0",
+                "padding": "10px 16px",
+                "border-radius": "8px",
+                "color": "#94A3B8",
+                "--hover-color": "rgba(56,189,248,0.08)",
+            },
+            "nav-link-selected": {
+                "background-color": "rgba(56,189,248,0.12)",
+                "color": "#38BDF8",
+                "font-weight": "600",
+                "border-left": "3px solid #38BDF8",
+            },
+        }
+    )
     st.markdown('<hr class="divider">', unsafe_allow_html=True)
     st.markdown('<div class="section-header">Informasi Dataset</div>', unsafe_allow_html=True)
     st.markdown("""
@@ -218,6 +252,22 @@ with st.sidebar:
     st.download_button("Download CSV", data=csv, file_name="model_comparison.csv",
                        mime="text/csv", use_container_width=True)
 
+@st.cache_resource
+def load_predictor():
+    try:
+        # Diupgrade menggunakan model N-Gram yang memiliki akurasi/F1 lebih baik
+        vec   = joblib.load('models/vectorizer_ngram.pkl')
+        model = joblib.load('models/model_nb_ngram.pkl')
+        return vec, model
+    except Exception as e:
+        return None, None
+
+def preprocess_text(text):
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9\s]', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
 # ─── Header ──────────────────────────────────────────────────────────────────
 st.markdown("# NLP Sentiment Analysis Dashboard")
 _total_models = len(df) if not df.empty else 10
@@ -225,37 +275,65 @@ st.markdown(f"<p style='color:#64748B;font-size:0.95rem;margin-top:-10px;'>Perba
 st.markdown('<hr class="divider">', unsafe_allow_html=True)
 
 # ─── KPI Cards ───────────────────────────────────────────────────────────────
-if not df.empty:
-    best = df.iloc[0]
-    ml_df = df[df['Kategori'] == 'Classical ML']
-    best_ml_name = ml_df.iloc[0]['Model'] if not ml_df.empty else "N/A"
-    
-    c1, c2, c3, c4, c5 = st.columns(5)
-    cards = [
-        (c1, "Best Model", best['Model'], "#F59E0B"),
-        (c2, "Best F1-Macro", f"{best['F1-Macro']:.4f}", "#38BDF8"),
-        (c3, "Best Accuracy", f"{best['Accuracy']*100:.2f}%", "#34D399"),
-        (c4, "Best Classical ML", best_ml_name, "#A78BFA"),
-        (c5, "Total Model", str(len(df)), "#FB7185"),
-    ]
-    for col, title, val, color in cards:
-        col.markdown(
-            f'<div class="metric-card"><div class="metric-title">{title}</div>'
-            f'<div class="metric-value" style="color:{color};font-size:1.3rem;">{val}</div></div>',
-            unsafe_allow_html=True
-        )
+if selected == "Overview":
+    st.markdown("### Executive Summary")
+    st.markdown("<p style='color:#64748B;font-size:0.95rem;'>Ringkasan metrik utama dari proyek klasifikasi sentimen Amazon Fine Food Reviews.</p>", unsafe_allow_html=True)
+    if not df.empty:
+        best = df.iloc[0]
+        ml_df = df[df['Kategori'] == 'Classical ML']
+        dl_df = df[df['Kategori'] == 'Deep Learning']
+        best_ml_name = ml_df.iloc[0]['Model'] if not ml_df.empty else "N/A"
 
-st.markdown("<br>", unsafe_allow_html=True)
+        c1, c2, c3, c4, c5 = st.columns(5)
+        cards = [
+            (c1, "Best Model", best['Model'], "#F59E0B"),
+            (c2, "Best F1-Macro", f"{best['F1-Macro']:.4f}", "#38BDF8"),
+            (c3, "Best Accuracy", f"{best['Accuracy']*100:.2f}%", "#34D399"),
+            (c4, "Best Classical ML", best_ml_name, "#A78BFA"),
+            (c5, "Total Model", str(len(df)), "#FB7185"),
+        ]
+        for col, title, val, color in cards:
+            col.markdown(
+                f'<div class="metric-card"><div class="metric-title">{title}</div>'
+                f'<div class="metric-value" style="color:{color};font-size:1.3rem;">{val}</div></div>',
+                unsafe_allow_html=True
+            )
 
-# ─── Tabs ─────────────────────────────────────────────────────────────────────
-tab0, tab1, tab2, tab3, tab4, tab_train, tab_err, tab5, tab6 = st.tabs([
-    "Eksplorasi Data", "Perbandingan", "Radar Chart",
-    "Confusion Matrix", "Analisis Per Kelas",
-    "Riwayat Training", "Error Analysis", "Prediksi Sentimen", "Kesimpulan"
-])
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<hr class="divider">', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Ringkasan Proyek</div>', unsafe_allow_html=True)
+        col_ov1, col_ov2, col_ov3 = st.columns(3)
+        ov_items = [
+            (col_ov1, "Dataset", "Amazon Fine Food Reviews", "363.888 ulasan", "#38BDF8"),
+            (col_ov2, "Task", "Binary Sentiment Analysis", "Negatif (0) vs Positif (1)", "#34D399"),
+            (col_ov3, "Metrik Utama", "F1-Macro", "Macro-Averaged F1 Score", "#A78BFA"),
+        ]
+        for col, title, val, sub, color in ov_items:
+            col.markdown(f"""
+<div style='background:linear-gradient(145deg,#141929,#1A2035);border:1px solid #1E2D45;
+border-left:4px solid {color};border-radius:12px;padding:20px;'>
+<div style='font-size:0.7rem;color:{color};font-weight:700;text-transform:uppercase;letter-spacing:1px;'>{title}</div>
+<div style='color:#F1F5F9;font-size:1.1rem;font-weight:600;margin:8px 0 4px;'>{val}</div>
+<div style='color:#64748B;font-size:0.82rem;'>{sub}</div>
+</div>
+""", unsafe_allow_html=True)
 
-# ── TAB 0: Eksplorasi Data (EDA) ──────────────────────────────────────────────
-with tab0:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Peringkat Model (Semua)</div>', unsafe_allow_html=True)
+        cmap = {'Classical ML': '#64748B', 'Deep Learning': '#38BDF8'}
+        fig_ov = px.bar(df, x='F1-Macro', y='Model', orientation='h',
+                        color='Kategori', color_discrete_map=cmap, text_auto='.4f')
+        fig_ov.update_layout(**LAYOUT, yaxis={'categoryorder': 'total ascending'},
+                             legend_title_text='', xaxis=dict(range=[0.65, 1.0]), height=350)
+        fig_ov.update_traces(textfont_color='white')
+        st.plotly_chart(fig_ov, use_container_width=True)
+    else:
+        st.warning("Data model tidak tersedia. Pastikan file results/all_metrics.json ada.")
+
+# ─── Content Pages ────────────────────────────────────────────────────────────
+
+# ── Dataset Overview ──────────────────────────────────────────────
+elif selected == "Data & Preprocessing":
     st.markdown('<div class="section-header">Eksplorasi Dataset — Amazon Fine Food Reviews</div>', unsafe_allow_html=True)
     st.markdown("<p style='color:#64748B;font-size:0.87rem;'>Analisis awal terhadap distribusi dan karakteristik data sebelum pemodelan.</p>", unsafe_allow_html=True)
 
@@ -384,14 +462,14 @@ Hal ini menjadi alasan utama pemilihan <strong>F1-Macro</strong> sebagai metrik 
         st.plotly_chart(fig_words, use_container_width=True)
 
     st.markdown('<hr class="divider">', unsafe_allow_html=True)
-    st.markdown('<div class="section-header">Ringkasan Pipeline Preprocessing</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Preprocessing Pipeline</div>', unsafe_allow_html=True)
     steps = [
-        ("1", "Case Folding", "Mengubah seluruh teks menjadi huruf kecil (lowercase) untuk menghilangkan ambiguitas."),
-        ("2", "Cleaning", "Menghapus karakter khusus, angka, HTML tags, dan URL yang tidak relevan."),
-        ("3", "Tokenisasi", "Memisahkan kalimat menjadi token (kata individual) menggunakan NLTK."),
-        ("4", "Stopword Removal", "Menghapus kata-kata umum (the, is, a, an, dll.) yang tidak membawa makna sentimen."),
-        ("5", "Lemmatisasi", "Mengubah kata ke bentuk dasar (running → run, better → good) menggunakan WordNet Lemmatizer."),
-        ("6", "Data Augmentation", "Back-translation (EN→DE→EN) pada kelas minoritas untuk mengatasi class imbalance."),
+        ("1", "Case Folding", "Mengubah seluruh teks menjadi huruf kecil untuk menghilangkan ambiguitas."),
+        ("2", "Cleaning", "Menghapus karakter khusus, angka, HTML tags, dan URL."),
+        ("3", "Tokenisasi", "Memisahkan kalimat menjadi token menggunakan NLTK."),
+        ("4", "Stopword Removal", "Menghapus kata-kata umum yang tidak membawa makna sentimen."),
+        ("5", "Lemmatisasi", "Mengubah kata ke bentuk dasar menggunakan WordNet Lemmatizer."),
+        ("6", "Augmentasi", "Back-translation (EN→DE→EN) untuk mengatasi class imbalance."),
     ]
     cols_step = st.columns(3)
     for i, (num, title_step, desc) in enumerate(steps):
@@ -406,8 +484,170 @@ letter-spacing:1px;margin-bottom:4px;'>STEP {num}</div>
 </div>
 """, unsafe_allow_html=True)
 
+    st.markdown('<hr class="divider">', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Augmentation & Balancing</div>', unsafe_allow_html=True)
+    col_aug1, col_aug2 = st.columns(2)
+    with col_aug1:
+        st.markdown("""
+<div style='background:linear-gradient(145deg,#141929,#1A2035);border:1px solid #1E2D45;
+border-left:3px solid #A78BFA;border-radius:10px;padding:18px;'>
+<div style='font-size:0.75rem;color:#A78BFA;font-weight:700;text-transform:uppercase;letter-spacing:1px;'>Augmentation Strategy</div>
+<div style='color:#F1F5F9;font-size:1.1rem;font-weight:600;margin:8px 0 4px;'>Back-Translation</div>
+<div style='color:#64748B;font-size:0.83rem;line-height:1.6;'>Teks pada kelas Negatif (minoritas) diterjemahkan EN→DE lalu dikembalikan ke EN menggunakan MarianMT untuk menambah variasi data training.</div>
+</div>
+""", unsafe_allow_html=True)
+    with col_aug2:
+        st.markdown("""
+<div style='background:linear-gradient(145deg,#141929,#1A2035);border:1px solid #1E2D45;
+border-left:3px solid #34D399;border-radius:10px;padding:18px;'>
+<div style='font-size:0.75rem;color:#34D399;font-weight:700;text-transform:uppercase;letter-spacing:1px;'>Class Balancing</div>
+<div style='color:#F1F5F9;font-size:1.1rem;font-weight:600;margin:8px 0 4px;'>Class Weight & Augmentation</div>
+<div style='color:#64748B;font-size:0.83rem;line-height:1.6;'>Model Deep Learning menggunakan <code>class_weight</code> untuk memberikan penalti lebih besar pada kesalahan kelas minoritas (Negatif).</div>
+</div>
+""", unsafe_allow_html=True)
+
+elif selected == "Feature Extraction":
+    st.markdown('<div class="section-header">Feature Extraction — Representasi Teks</div>', unsafe_allow_html=True)
+    st.markdown("<p style='color:#64748B;font-size:0.87rem;'>Model Machine Learning tidak dapat membaca teks mentah. Teks harus diubah menjadi representasi numerik (vektor) terlebih dahulu. Berikut metode ekstraksi fitur yang digunakan dalam proyek ini.</p>", unsafe_allow_html=True)
+
+    # ── Method Cards ──
+    methods = [
+        {
+            "name": "TF-IDF",
+            "full": "Term Frequency – Inverse Document Frequency",
+            "color": "#38BDF8",
+            "used_by": "Naive Bayes, Logistic Regression, SVM, SGD, RF, KNN",
+            "dim": "N-gram (1,2) · max 50.000 fitur",
+            "pros": "Cepat, efisien memori, tidak perlu GPU.",
+            "cons": "Tidak menangkap konteks semantik atau urutan kata.",
+            "desc": "Menghitung bobot setiap kata berdasarkan frekuensi kemunculannya di dokumen dan seberapa jarang kata tersebut muncul di seluruh korpus.",
+        },
+        {
+            "name": "GloVe 50d",
+            "full": "Global Vectors for Word Representation (50 dim)",
+            "color": "#A78BFA",
+            "used_by": "GloVe 50d + MLP",
+            "dim": "50 dimensi · pre-trained Stanford",
+            "pros": "Representasi semantik lebih kaya dari TF-IDF.",
+            "cons": "Dimensi kecil, informasi terbatas.",
+            "desc": "Word embedding pre-trained yang memetakan kata ke dalam ruang vektor berdasarkan ko-okurens global. Setiap review direpresentasikan sebagai rata-rata vektor semua kata.",
+        },
+        {
+            "name": "GloVe 300d",
+            "full": "Global Vectors for Word Representation (300 dim)",
+            "color": "#34D399",
+            "used_by": "GloVe 300d + MLP",
+            "dim": "300 dimensi · max 200 token",
+            "pros": "Representasi lebih kaya, menangkap sinonim & relasi semantik.",
+            "cons": "Lebih lambat dan berat dari GloVe 50d.",
+            "desc": "Versi GloVe dengan dimensi lebih tinggi menghasilkan representasi yang lebih ekspresif. Dipadukan dengan MLP 3-layer untuk klasifikasi sentimen.",
+        },
+        {
+            "name": "Word2Vec",
+            "full": "Word to Vector (Skip-gram / CBOW)",
+            "color": "#F59E0B",
+            "used_by": "Word2Vec + MLP",
+            "dim": "100 dimensi · trained on corpus",
+            "pros": "Dilatih pada data sendiri, kontekstual terhadap domain.",
+            "cons": "Butuh data besar untuk embedding yang optimal.",
+            "desc": "Word embedding yang dilatih langsung dari dataset Amazon Fine Food Reviews. Model Skip-gram mempelajari representasi kata berdasarkan kata-kata di sekitarnya.",
+        },
+        {
+            "name": "DistilBERT",
+            "full": "Distilled BERT (distilbert-base-uncased)",
+            "color": "#FB7185",
+            "used_by": "DistilBERT (Fine-tuned)",
+            "dim": "768 dimensi · contextual token embedding",
+            "pros": "Kontekstual, menangkap makna berdasarkan kalimat penuh.",
+            "cons": "Sangat berat komputasi, butuh GPU.",
+            "desc": "Model Transformer pre-trained yang di-fine-tune untuk klasifikasi sentimen. Setiap token mendapat representasi unik berdasarkan konteks kalimat penuh.",
+        },
+    ]
+
+    cols = st.columns(len(methods))
+    for col, m in zip(cols, methods):
+        col.markdown(f"""
+<div style='background:linear-gradient(145deg,#141929,#1A2035);border:1px solid #1E2D45;
+border-top:3px solid {m["color"]};border-radius:12px;padding:16px;height:100%;'>
+<div style='font-size:1.2rem;font-weight:700;color:{m["color"]};margin-bottom:4px;'>{m["name"]}</div>
+<div style='font-size:0.7rem;color:#475569;margin-bottom:10px;line-height:1.4;'>{m["full"]}</div>
+<div style='font-size:0.75rem;color:#64748B;margin-bottom:8px;line-height:1.6;'>{m["desc"]}</div>
+<div style='background:#0A0E1A;border-radius:6px;padding:8px;margin-top:8px;'>
+<div style='font-size:0.65rem;color:#38BDF8;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;'>Digunakan oleh</div>
+<div style='font-size:0.72rem;color:#94A3B8;margin-top:2px;'>{m["used_by"]}</div>
+</div>
+<div style='background:#0A0E1A;border-radius:6px;padding:8px;margin-top:6px;'>
+<div style='font-size:0.65rem;color:#A78BFA;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;'>Dimensi / Config</div>
+<div style='font-size:0.72rem;color:#94A3B8;margin-top:2px;'>{m["dim"]}</div>
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<hr class="divider">', unsafe_allow_html=True)
+
+    # ── Comparison Table ──
+    st.markdown('<div class="section-header">Perbandingan Metode</div>', unsafe_allow_html=True)
+    fe_data = {
+        "Metode": ["TF-IDF", "GloVe 50d", "GloVe 300d", "Word2Vec", "DistilBERT"],
+        "Tipe": ["Sparse", "Dense", "Dense", "Dense", "Contextual"],
+        "Dimensi": [50000, 50, 300, 100, 768],
+        "Pre-trained": ["❌", "✅ Stanford", "✅ Stanford", "✅ Domain", "✅ HuggingFace"],
+        "Kontekstual": ["❌", "❌", "❌", "❌", "✅"],
+        "GPU Required": ["❌", "❌", "❌", "❌", "✅"],
+    }
+    fe_df = pd.DataFrame(fe_data)
+    st.dataframe(fe_df, use_container_width=True, hide_index=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── Pipeline Visual ──
+    st.markdown('<div class="section-header">Pipeline Ekstraksi Fitur</div>', unsafe_allow_html=True)
+    st.markdown("""
+<div style='background:linear-gradient(145deg,#0F1E35,#111827);border:1px solid #1E3A5F;border-radius:12px;padding:24px;'>
+<div style='display:flex;align-items:center;gap:12px;flex-wrap:wrap;'>
+  <div style='background:#141929;border:1px solid #1E2D45;border-radius:8px;padding:12px 16px;text-align:center;min-width:120px;'>
+    <div style='font-size:1.4rem;'>📝</div>
+    <div style='color:#F1F5F9;font-size:0.8rem;font-weight:600;margin-top:4px;'>Raw Text</div>
+    <div style='color:#475569;font-size:0.7rem;'>Ulasan mentah</div>
+  </div>
+  <div style='color:#38BDF8;font-size:1.5rem;'>→</div>
+  <div style='background:#141929;border:1px solid #1E2D45;border-radius:8px;padding:12px 16px;text-align:center;min-width:120px;'>
+    <div style='font-size:1.4rem;'>🧹</div>
+    <div style='color:#F1F5F9;font-size:0.8rem;font-weight:600;margin-top:4px;'>Preprocessing</div>
+    <div style='color:#475569;font-size:0.7rem;'>Clean + Lemma</div>
+  </div>
+  <div style='color:#38BDF8;font-size:1.5rem;'>→</div>
+  <div style='background:#141929;border:1px solid #1E2D45;border-radius:8px;padding:12px 16px;text-align:center;min-width:120px;'>
+    <div style='font-size:1.4rem;'>⚙️</div>
+    <div style='color:#F1F5F9;font-size:0.8rem;font-weight:600;margin-top:4px;'>Vektorisasi</div>
+    <div style='color:#475569;font-size:0.7rem;'>TF-IDF / Embedding</div>
+  </div>
+  <div style='color:#38BDF8;font-size:1.5rem;'>→</div>
+  <div style='background:#141929;border:1px solid #1E2D45;border-radius:8px;padding:12px 16px;text-align:center;min-width:120px;'>
+    <div style='font-size:1.4rem;'>🔢</div>
+    <div style='color:#F1F5F9;font-size:0.8rem;font-weight:600;margin-top:4px;'>Feature Vector</div>
+    <div style='color:#475569;font-size:0.7rem;'>Numerik</div>
+  </div>
+  <div style='color:#38BDF8;font-size:1.5rem;'>→</div>
+  <div style='background:#141929;border:1px solid #1E2D45;border-radius:8px;padding:12px 16px;text-align:center;min-width:120px;'>
+    <div style='font-size:1.4rem;'>🧠</div>
+    <div style='color:#F1F5F9;font-size:0.8rem;font-weight:600;margin-top:4px;'>Model</div>
+    <div style='color:#475569;font-size:0.7rem;'>Klasifikasi</div>
+  </div>
+  <div style='color:#38BDF8;font-size:1.5rem;'>→</div>
+  <div style='background:#141929;border:1px solid #34D399;border-radius:8px;padding:12px 16px;text-align:center;min-width:120px;'>
+    <div style='font-size:1.4rem;'>🎯</div>
+    <div style='color:#34D399;font-size:0.8rem;font-weight:600;margin-top:4px;'>Prediksi</div>
+    <div style='color:#475569;font-size:0.7rem;'>Pos / Neg</div>
+  </div>
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+
 # ── TAB 1: Perbandingan ───────────────────────────────────────────────────────
-with tab1:
+elif selected == "Model Comparison":
     col_l, col_r = st.columns([6, 4])
     with col_l:
         st.markdown('<div class="section-header">Ranking F1-Macro</div>', unsafe_allow_html=True)
@@ -435,9 +675,8 @@ with tab1:
     fig_g.update_layout(**LAYOUT, xaxis_tickangle=-30, yaxis=dict(range=[0.6, 1.0]))
     st.plotly_chart(fig_g, use_container_width=True)
 
-# ── TAB 2: Radar ──────────────────────────────────────────────────────────────
-with tab2:
-    st.markdown('<div class="section-header">Radar Chart Perbandingan Model</div>', unsafe_allow_html=True)
+    st.markdown('<hr class="divider">', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Radar Chart — Top Models</div>', unsafe_allow_html=True)
     sel = st.multiselect("Pilih model:", options=df['Model'].tolist(), default=df['Model'].tolist()[:3])
     if sel:
         fig_r = go.Figure()
@@ -472,8 +711,7 @@ with tab2:
     else:
         st.info("Pilih minimal 1 model untuk menampilkan radar chart.")
 
-# ── TAB 3: Confusion Matrix ───────────────────────────────────────────────────
-with tab3:
+elif selected == "Training & Evaluation":
     st.markdown('<div class="section-header">Confusion Matrix</div>', unsafe_allow_html=True)
 
     def is_valid_cm(model_name):
@@ -564,9 +802,8 @@ with tab3:
     else:
         st.info("Tidak ada confusion matrix yang tersedia.")
 
-# ── TAB 4: Per Kelas ──────────────────────────────────────────────────────────
-with tab4:
-    st.markdown('<div class="section-header">Precision dan Recall Per Kelas</div>', unsafe_allow_html=True)
+    st.markdown('<hr class="divider">', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Precision & Recall Per Kelas</div>', unsafe_allow_html=True)
     st.markdown("<p style='color:#64748B;font-size:0.87rem;'>Analisis kemampuan model menangani class imbalance antara kelas Negatif (minoritas) dan Positif (mayoritas).</p>", unsafe_allow_html=True)
 
     df_cls = df[df['CM'].apply(lambda x: len(x) > 0)].copy()
@@ -600,11 +837,9 @@ with tab4:
     else:
         st.info("Data confusion matrix tidak tersedia.")
 
-
-# ── TAB RIWAYAT TRAINING ──────────────────────────────────────────────────────
-with tab_train:
-    st.markdown('<div class="section-header">Riwayat Training & Evaluasi Model</div>', unsafe_allow_html=True)
-    st.markdown("<p style='color:#64748B;font-size:0.87rem;'>Rekap proses pelatihan model Deep Learning beserta validasi silang (K-Fold CV) untuk memastikan generalisasi model.</p>", unsafe_allow_html=True)
+    st.markdown('<hr class="divider">', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Riwayat Training & K-Fold CV</div>', unsafe_allow_html=True)
+    st.markdown("<p style='color:#64748B;font-size:0.87rem;'>Rekap proses pelatihan model Deep Learning beserta validasi silang (K-Fold CV).</p>", unsafe_allow_html=True)
 
     # ── K-Fold Cross Validation ──
     st.markdown('<div class="section-header" style="font-size:0.8rem;">K-Fold Cross Validation — Stabilitas Model</div>', unsafe_allow_html=True)
@@ -807,7 +1042,7 @@ Augmented Data: <code>{'Ya' if glove_data.get('used_augmented_data') else 'Tidak
             st.image('visualizations/final_comparison.png', caption='Final Comparison', use_container_width=True)
 
 # ── TAB 6: Kesimpulan ─────────────────────────────────────────────────────────
-with tab6:
+elif selected == "Final Insights":
     st.markdown('<div class="section-header">Kesimpulan Otomatis</div>', unsafe_allow_html=True)
     if not df.empty:
         best = df.iloc[0]
@@ -861,7 +1096,7 @@ antara Precision dan Recall pada kedua kelas. Jika sumber daya komputasi terbata
         st.dataframe(final, use_container_width=True)
 
 # ── TAB ERROR ANALYSIS ───────────────────────────────────────────────────────
-with tab_err:
+elif selected == "Error Analysis":
     st.markdown('<div class="section-header">Error Analysis — Analisis Kesalahan Prediksi Model</div>', unsafe_allow_html=True)
     st.markdown("<p style='color:#64748B;font-size:0.87rem;'>Analisis mendalam terhadap pola kesalahan setiap model: False Positive (FP), False Negative (FN), dan distribusi error per kelas.</p>", unsafe_allow_html=True)
 
@@ -1086,24 +1321,8 @@ with tab_err:
 </div>
 """, unsafe_allow_html=True)
 
-# ── TAB 5: Prediksi Sentimen ─────────────────────────────────────────────────
-@st.cache_resource
-def load_predictor():
-    try:
-        # Diupgrade menggunakan model N-Gram yang memiliki akurasi/F1 lebih baik
-        vec   = joblib.load('models/vectorizer_ngram.pkl')
-        model = joblib.load('models/model_nb_ngram.pkl')
-        return vec, model
-    except Exception as e:
-        return None, None
 
-def preprocess_text(text):
-    text = text.lower()
-    text = re.sub(r'[^a-z0-9\s]', ' ', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
-
-with tab5:
+elif selected == "Interactive Prediction":
     st.markdown('<div class="section-header">Prediksi Sentimen Teks</div>', unsafe_allow_html=True)
     st.markdown("<p style='color:#64748B;font-size:0.87rem;'>Masukkan teks ulasan produk dalam Bahasa Inggris. Model akan memprediksi apakah ulasan tersebut bersifat Positif atau Negatif.</p>", unsafe_allow_html=True)
 
@@ -1200,6 +1419,17 @@ with tab5:
   <div style='font-size:0.78rem;margin-top:6px;'>Ketik teks ulasan lalu klik tombol Analisis</div>
 </div>
 """, unsafe_allow_html=True)
+
+elif selected == "About Project":
+    st.markdown('<div class="section-header">About Project</div>', unsafe_allow_html=True)
+    st.markdown("""
+    ### 📊 Amazon Fine Food Reviews - Sentiment Analysis
+    Proyek ini berfokus pada pembangunan pipeline NLP lengkap untuk memprediksi sentimen ulasan pelanggan. 
+    Kami membandingkan model **Classical Machine Learning** (Naive Bayes, SVM, Logistic Regression, dll.) 
+    dengan **Deep Learning** (DistilBERT, MLP + GloVe) untuk menemukan pendekatan paling optimal.
+    
+    *Informasi lebih lanjut tentang tim/peneliti dapat ditambahkan di sini.*
+    """)
 
 # ─── Footer ──────────────────────────────────────────────────────────────────
 st.markdown('<hr class="divider">', unsafe_allow_html=True)
